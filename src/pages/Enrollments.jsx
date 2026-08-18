@@ -12,6 +12,7 @@ export default function Enrollments() {
   const [courseId, setCourseId] = useState("");
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -25,6 +26,8 @@ export default function Enrollments() {
 
   async function handleEnroll() {
     if (!studentId || !courseId) { setError("Please select both a student and a course"); return; }
+    
+    setIsSaving(true);
     try {
       await api.post("/api/enrollments", { studentId, courseId });
       setToast("Student enrolled");
@@ -33,6 +36,8 @@ export default function Enrollments() {
       load();
     } catch (err) {
       setError(err.message);
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -49,9 +54,13 @@ export default function Enrollments() {
 
   const rowMarkup = enrollments.map((e, index) => (
     <IndexTable.Row id={e._id} key={e._id} position={index}>
-      <IndexTable.Cell>{e.student?.name}</IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text variant="bodyMd" fontWeight="bold" as="span">{e.student?.name}</Text>
+      </IndexTable.Cell>
       <IndexTable.Cell>{e.course?.title}</IndexTable.Cell>
-      <IndexTable.Cell>{new Date(e.enrollmentDate).toLocaleDateString()}</IndexTable.Cell>
+      <IndexTable.Cell>
+        {new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(e.enrollmentDate))}
+      </IndexTable.Cell>
       <IndexTable.Cell><Badge tone={e.status === "Completed" ? "success" : "attention"}>{e.status}</Badge></IndexTable.Cell>
       <IndexTable.Cell><Button size="slim" onClick={() => toggleStatus(e)}>Mark as {e.status === "Completed" ? "In Progress" : "Completed"}</Button></IndexTable.Cell>
     </IndexTable.Row>
@@ -66,7 +75,12 @@ export default function Enrollments() {
               <BlockStack inlineAlign="center"><Spinner /></BlockStack>
             </Box>
           ) : enrollments.length === 0 ? (
-            <EmptyState heading="No enrollments yet" image=""><p>Enroll a student in a course to get started.</p></EmptyState>
+            <EmptyState 
+              heading="No enrollments yet" 
+              image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
+            >
+              <p>Enroll a student in a course to get started.</p>
+            </EmptyState>
           ) : (
             <IndexTable resourceName={{ singular: "enrollment", plural: "enrollments" }} itemCount={enrollments.length}
               headings={[{ title: "Student" }, { title: "Course" }, { title: "Enrolled On" }, { title: "Status" }, { title: "Actions" }]} selectable={false}>
@@ -76,8 +90,8 @@ export default function Enrollments() {
         </Card>
 
         <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Enroll student"
-          primaryAction={{ content: "Enroll", onAction: handleEnroll }}
-          secondaryActions={[{ content: "Cancel", onAction: () => setModalOpen(false) }]}>
+          primaryAction={{ content: "Enroll", onAction: handleEnroll, loading: isSaving }}
+          secondaryActions={[{ content: "Cancel", onAction: () => setModalOpen(false), disabled: isSaving }]}>
           <Modal.Section>
             <FormLayout>
               <Select label="Student" options={[{ label: "Select a student", value: "" }, ...students.map((s) => ({ label: `${s.name} (${s.email})`, value: s._id }))]} value={studentId} onChange={setStudentId} />

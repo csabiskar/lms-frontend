@@ -13,6 +13,8 @@ export default function Courses() {
   const [errors, setErrors] = useState({});
   const [toast, setToast] = useState("");
   const [deleteId, setDeleteId] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -46,6 +48,7 @@ export default function Courses() {
     if (!form.duration.trim()) newErrors.duration = "Duration is required";
     if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
 
+    setIsSaving(true);
     try {
       if (editingId) {
         await api.put(`/api/courses/${editingId}`, form);
@@ -58,10 +61,13 @@ export default function Courses() {
       load();
     } catch (err) {
       setToast(err.message);
+    } finally {
+      setIsSaving(false);
     }
   }
 
   async function handleDelete() {
+    setIsDeleting(true);
     try {
       await api.del(`/api/courses/${deleteId}`);
       setToast("Course deleted");
@@ -69,12 +75,16 @@ export default function Courses() {
       load();
     } catch (err) {
       setToast(err.message);
+    } finally {
+      setIsDeleting(false);
     }
   }
 
   const rowMarkup = courses.map((c, index) => (
     <IndexTable.Row id={c._id} key={c._id} position={index}>
-      <IndexTable.Cell>{c.title}</IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text variant="bodyMd" fontWeight="bold" as="span">{c.title}</Text>
+      </IndexTable.Cell>
       <IndexTable.Cell>{c.instructorName}</IndexTable.Cell>
       <IndexTable.Cell>{c.category}</IndexTable.Cell>
       <IndexTable.Cell>{c.duration}</IndexTable.Cell>
@@ -97,7 +107,11 @@ export default function Courses() {
               <BlockStack inlineAlign="center"><Spinner /></BlockStack>
             </Box>
           ) : courses.length === 0 ? (
-            <EmptyState heading="No courses yet" action={{ content: "Add course", onAction: openCreate }} image="">
+            <EmptyState 
+              heading="No courses yet" 
+              action={{ content: "Add course", onAction: openCreate }} 
+              image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
+            >
               <p>Create your first course to get started.</p>
             </EmptyState>
           ) : (
@@ -113,8 +127,8 @@ export default function Courses() {
         </Card>
 
         <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editingId ? "Edit course" : "Add course"}
-          primaryAction={{ content: "Save", onAction: handleSave }}
-          secondaryActions={[{ content: "Cancel", onAction: () => setModalOpen(false) }]}>
+          primaryAction={{ content: "Save", onAction: handleSave, loading: isSaving }}
+          secondaryActions={[{ content: "Cancel", onAction: () => setModalOpen(false), disabled: isSaving }]}>
           <Modal.Section>
             <FormLayout>
               <TextField label="Title" value={form.title} onChange={(v) => setForm({ ...form, title: v })} error={errors.title} autoComplete="off" />
@@ -128,8 +142,8 @@ export default function Courses() {
         </Modal>
 
         <Modal open={!!deleteId} onClose={() => setDeleteId(null)} title="Delete course?"
-          primaryAction={{ content: "Delete", destructive: true, onAction: handleDelete }}
-          secondaryActions={[{ content: "Cancel", onAction: () => setDeleteId(null) }]}>
+          primaryAction={{ content: "Delete", destructive: true, onAction: handleDelete, loading: isDeleting }}
+          secondaryActions={[{ content: "Cancel", onAction: () => setDeleteId(null), disabled: isDeleting }]}>
           <Modal.Section><p>This will also remove any enrollments tied to this course. This cannot be undone.</p></Modal.Section>
         </Modal>
 

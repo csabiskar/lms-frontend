@@ -9,6 +9,7 @@ export default function Students() {
   const [form, setForm] = useState({ name: "", email: "" });
   const [errors, setErrors] = useState({});
   const [toast, setToast] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   const [dashboardOpen, setDashboardOpen] = useState(false);
   const [activeStudent, setActiveStudent] = useState(null);
@@ -42,6 +43,7 @@ export default function Students() {
     if (!form.email.trim() || !/^\S+@\S+\.\S+$/.test(form.email)) newErrors.email = "Valid email is required";
     if (Object.keys(newErrors).length) { setErrors(newErrors); return; }
 
+    setIsSaving(true);
     try {
       await api.post("/api/students", form);
       setToast("Student added");
@@ -50,12 +52,16 @@ export default function Students() {
       load();
     } catch (err) {
       setToast(err.message);
+    } finally {
+      setIsSaving(false);
     }
   }
 
   const rowMarkup = students.map((s, index) => (
     <IndexTable.Row id={s._id} key={s._id} position={index}>
-      <IndexTable.Cell>{s.name}</IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text variant="bodyMd" fontWeight="bold" as="span">{s.name}</Text>
+      </IndexTable.Cell>
       <IndexTable.Cell>{s.email}</IndexTable.Cell>
       <IndexTable.Cell>
         <Button size="slim" onClick={() => openDashboard(s)}>View Dashboard</Button>
@@ -72,7 +78,12 @@ export default function Students() {
               <BlockStack inlineAlign="center"><Spinner /></BlockStack>
             </Box>
           ) : students.length === 0 ? (
-            <EmptyState heading="No students yet" image=""><p>Add your first student to get started.</p></EmptyState>
+            <EmptyState 
+              heading="No students yet" 
+              image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
+            >
+              <p>Add your first student to get started.</p>
+            </EmptyState>
           ) : (
             <IndexTable resourceName={{ singular: "student", plural: "students" }} itemCount={students.length} headings={[{ title: "Name" }, { title: "Email" }, { title: "Actions" }]} selectable={false}>
               {rowMarkup}
@@ -81,8 +92,8 @@ export default function Students() {
         </Card>
 
         <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Add student"
-          primaryAction={{ content: "Save", onAction: handleSave }}
-          secondaryActions={[{ content: "Cancel", onAction: () => setModalOpen(false) }]}>
+          primaryAction={{ content: "Save", onAction: handleSave, loading: isSaving }}
+          secondaryActions={[{ content: "Cancel", onAction: () => setModalOpen(false), disabled: isSaving }]}>
           <Modal.Section>
             <FormLayout>
               <TextField label="Name" value={form.name} onChange={(v) => setForm({ ...form, name: v })} error={errors.name} autoComplete="off" />
@@ -112,13 +123,15 @@ export default function Students() {
               {dashboardLoading ? (
                 <Spinner />
               ) : studentCourses.length === 0 ? (
-                <EmptyState heading="No enrollments" image=""><p>This student is not enrolled in any courses.</p></EmptyState>
+                <EmptyState heading="No enrollments" image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"><p>This student is not enrolled in any courses.</p></EmptyState>
               ) : (
                 <IndexTable resourceName={{ singular: "course", plural: "courses" }} itemCount={studentCourses.length} headings={[{ title: "Course" }, { title: "Enrolled On" }, { title: "Status" }]} selectable={false}>
                   {studentCourses.map((e, index) => (
                     <IndexTable.Row id={e.enrollmentId} key={e.enrollmentId} position={index}>
                       <IndexTable.Cell>{e.course?.title}</IndexTable.Cell>
-                      <IndexTable.Cell>{new Date(e.enrollmentDate).toLocaleDateString()}</IndexTable.Cell>
+                      <IndexTable.Cell>
+                        {new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(e.enrollmentDate))}
+                      </IndexTable.Cell>
                       <IndexTable.Cell><Badge tone={e.status === "Completed" ? "success" : "attention"}>{e.status}</Badge></IndexTable.Cell>
                     </IndexTable.Row>
                   ))}

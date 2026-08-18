@@ -27,6 +27,13 @@ export default function Dashboard() {
 
   return (
     <Page title="Dashboard">
+      {data.shopifyData && (
+        <div style={{ marginBottom: "1rem" }}>
+          <Banner tone="info">
+            <Text as="p">Welcome back, <strong>{data.shopifyData.name}</strong>! Your LMS is connected to {data.shopifyData.contactEmail}.</Text>
+          </Banner>
+        </div>
+      )}
       <Layout>
         <Layout.Section>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "1rem" }}>

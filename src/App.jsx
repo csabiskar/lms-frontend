@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { AppProvider, Frame, Navigation, Spinner, Page, Banner } from "@shopify/polaris";
-import { BrowserRouter, Routes, Route, useLocation, Link as ReactRouterLink } from "react-router-dom";
+import { AppProvider, Frame, Spinner, Page, Banner, Tabs } from "@shopify/polaris";
+import { BrowserRouter, Routes, Route, useLocation, Link as ReactRouterLink, useNavigate } from "react-router-dom";
 import en from "@shopify/polaris/locales/en.json";
 import { getToken } from "./shopify";
 import Dashboard from "./pages/Dashboard";
@@ -27,21 +27,22 @@ function LinkComponent({ children, url = '', external, ref, ...rest }) {
 
 function Layout() {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const tabs = [
+    { id: "dashboard", content: "Dashboard", url: "/" },
+    { id: "courses", content: "Courses", url: "/courses" },
+    { id: "students", content: "Students", url: "/students" },
+    { id: "enrollments", content: "Enrollments", url: "/enrollments" },
+  ];
+
+  const selectedIndex = tabs.findIndex((t) => t.url === location.pathname);
+
   return (
-    <Frame
-      navigation={
-        <Navigation location={location.pathname}>
-          <Navigation.Section
-            items={[
-              { url: "/", label: "Dashboard", selected: location.pathname === "/" },
-              { url: "/courses", label: "Courses", selected: location.pathname === "/courses" },
-              { url: "/students", label: "Students", selected: location.pathname === "/students" },
-              { url: "/enrollments", label: "Enrollments", selected: location.pathname === "/enrollments" },
-            ]}
-          />
-        </Navigation>
-      }
-    >
+    <Frame>
+      <div style={{ padding: "0 1rem", borderBottom: "1px solid #e1e3e5", backgroundColor: "#fff" }}>
+        <Tabs tabs={tabs} selected={selectedIndex === -1 ? 0 : selectedIndex} onSelect={(idx) => navigate(tabs[idx].url)} />
+      </div>
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/courses" element={<Courses />} />

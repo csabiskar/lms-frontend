@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { AppProvider, Frame, Navigation, Spinner, Page, Banner } from "@shopify/polaris";
-import { HashRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Link as ReactRouterLink } from "react-router-dom";
 import en from "@shopify/polaris/locales/en.json";
 import { getToken } from "./shopify";
 import Dashboard from "./pages/Dashboard";
@@ -9,6 +9,21 @@ import Students from "./pages/Students";
 import Enrollments from "./pages/Enrollments";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
+function LinkComponent({ children, url = '', external, ref, ...rest }) {
+  if (external || /^(?:[a-z][a-z\d+.-]*:|\/\/)/.test(url)) {
+    return (
+      <a target="_blank" rel="noopener noreferrer" href={url} ref={ref} {...rest}>
+        {children}
+      </a>
+    );
+  }
+  return (
+    <ReactRouterLink to={url} ref={ref} {...rest}>
+      {children}
+    </ReactRouterLink>
+  );
+}
 
 function Layout() {
   const location = useLocation();
@@ -72,18 +87,20 @@ export default function App() {
   }, []);
 
   return (
-    <AppProvider i18n={en}>
-      {error ? (
-        <Page><Banner tone="critical">{error}</Banner></Page>
-      ) : !ready ? (
-        <Page>
-          <div style={{ display: "flex", justifyContent: "center", padding: "4rem" }}>
-            <Spinner accessibilityLabel="Loading app" size="large" />
-          </div>
-        </Page>
-      ) : (
-        <HashRouter><Layout /></HashRouter>
-      )}
-    </AppProvider>
+    <BrowserRouter>
+      <AppProvider i18n={en} linkComponent={LinkComponent}>
+        {error ? (
+          <Page><Banner tone="critical">{error}</Banner></Page>
+        ) : !ready ? (
+          <Page>
+            <div style={{ display: "flex", justifyContent: "center", padding: "4rem" }}>
+              <Spinner accessibilityLabel="Loading app" size="large" />
+            </div>
+          </Page>
+        ) : (
+          <Layout />
+        )}
+      </AppProvider>
+    </BrowserRouter>
   );
 }

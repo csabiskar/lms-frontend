@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Page, Card, IndexTable, EmptyState, Modal, FormLayout, TextField, Select, Toast, Frame, Spinner, Badge, Button, ButtonGroup, Box, BlockStack } from "@shopify/polaris";
+import { Page, Card, IndexTable, EmptyState, Modal, FormLayout, TextField, Select, Toast, Frame, Spinner, Badge, Button, ButtonGroup, Box, BlockStack, Text } from "@shopify/polaris";
 import { api } from "../api";
 
 const emptyForm = { title: "",description: "", instructorName: "", category: "", duration: "", status: "Active" };

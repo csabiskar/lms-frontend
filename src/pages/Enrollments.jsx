@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Page, Card, IndexTable, EmptyState, Modal, FormLayout, Select, Toast, Frame, Spinner, Badge, Button, Box, BlockStack } from "@shopify/polaris";
+import { Page, Card, IndexTable, EmptyState, Modal, FormLayout, Select, Toast, Frame, Spinner, Badge, Button, Box, BlockStack, Text } from "@shopify/polaris";
 import { api } from "../api";
 
 export default function Enrollments() {

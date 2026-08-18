@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Page, Card, IndexTable, EmptyState, Modal, FormLayout, TextField, Toast, Frame, Spinner, Button, Badge, Text } from "@shopify/polaris";
+import { Page, Card, IndexTable, EmptyState, Modal, FormLayout, TextField, Toast, Frame, Spinner, Button, Badge, Text, InlineGrid, BlockStack, Box } from "@shopify/polaris";
 import { api } from "../api";
 
 export default function Students() {
@@ -65,10 +65,12 @@ export default function Students() {
 
   return (
     <Frame>
-      <Page title="Students" primaryAction={{ content: "Add student", onAction: () => { setForm({ name: "", email: "" }); setErrors({}); setModalOpen(true); } }}>
-        <Card>
+      <Page title="Students" subtitle="Manage your learners" primaryAction={{ content: "Add student", onAction: () => { setForm({ name: "", email: "" }); setErrors({}); setModalOpen(true); } }}>
+        <Card padding="0">
           {loading ? (
-            <div style={{ padding: "2rem", textAlign: "center" }}><Spinner /></div>
+            <Box padding="800">
+              <BlockStack inlineAlign="center"><Spinner /></BlockStack>
+            </Box>
           ) : students.length === 0 ? (
             <EmptyState heading="No students yet" image=""><p>Add your first student to get started.</p></EmptyState>
           ) : (
@@ -91,31 +93,38 @@ export default function Students() {
 
         <Modal open={dashboardOpen} onClose={() => setDashboardOpen(false)} title={activeStudent ? `${activeStudent.name}'s Dashboard` : "Student Dashboard"} size="large">
           <Modal.Section>
-            <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
+            <InlineGrid columns={2} gap="400">
               <Card>
-                <Text variant="headingLg" as="p">{studentCourses.length}</Text>
-                <Text tone="subdued" as="p">Total Enrollments</Text>
+                <BlockStack gap="200">
+                  <Text variant="headingLg" as="p">{studentCourses.length}</Text>
+                  <Text tone="subdued" as="p">Total Enrollments</Text>
+                </BlockStack>
               </Card>
               <Card>
-                <Text variant="headingLg" as="p">{studentCourses.filter(c => c.status === "Completed").length}</Text>
-                <Text tone="subdued" as="p">Completed</Text>
+                <BlockStack gap="200">
+                  <Text variant="headingLg" as="p">{studentCourses.filter(c => c.status === "Completed").length}</Text>
+                  <Text tone="subdued" as="p">Completed</Text>
+                </BlockStack>
               </Card>
-            </div>
-            {dashboardLoading ? (
-              <Spinner />
-            ) : studentCourses.length === 0 ? (
-              <EmptyState heading="No enrollments" image=""><p>This student is not enrolled in any courses.</p></EmptyState>
-            ) : (
-              <IndexTable resourceName={{ singular: "course", plural: "courses" }} itemCount={studentCourses.length} headings={[{ title: "Course" }, { title: "Enrolled On" }, { title: "Status" }]} selectable={false}>
-                {studentCourses.map((e, index) => (
-                  <IndexTable.Row id={e.enrollmentId} key={e.enrollmentId} position={index}>
-                    <IndexTable.Cell>{e.course?.title}</IndexTable.Cell>
-                    <IndexTable.Cell>{new Date(e.enrollmentDate).toLocaleDateString()}</IndexTable.Cell>
-                    <IndexTable.Cell><Badge tone={e.status === "Completed" ? "success" : "attention"}>{e.status}</Badge></IndexTable.Cell>
-                  </IndexTable.Row>
-                ))}
-              </IndexTable>
-            )}
+            </InlineGrid>
+            
+            <Box paddingBlockStart="400">
+              {dashboardLoading ? (
+                <Spinner />
+              ) : studentCourses.length === 0 ? (
+                <EmptyState heading="No enrollments" image=""><p>This student is not enrolled in any courses.</p></EmptyState>
+              ) : (
+                <IndexTable resourceName={{ singular: "course", plural: "courses" }} itemCount={studentCourses.length} headings={[{ title: "Course" }, { title: "Enrolled On" }, { title: "Status" }]} selectable={false}>
+                  {studentCourses.map((e, index) => (
+                    <IndexTable.Row id={e.enrollmentId} key={e.enrollmentId} position={index}>
+                      <IndexTable.Cell>{e.course?.title}</IndexTable.Cell>
+                      <IndexTable.Cell>{new Date(e.enrollmentDate).toLocaleDateString()}</IndexTable.Cell>
+                      <IndexTable.Cell><Badge tone={e.status === "Completed" ? "success" : "attention"}>{e.status}</Badge></IndexTable.Cell>
+                    </IndexTable.Row>
+                  ))}
+                </IndexTable>
+              )}
+            </Box>
           </Modal.Section>
         </Modal>
 

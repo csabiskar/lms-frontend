@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Page, Card, IndexTable, EmptyState, Modal, FormLayout, TextField, Select, Toast, Frame, Spinner, Badge } from "@shopify/polaris";
+import { Page, Card, IndexTable, EmptyState, Modal, FormLayout, TextField, Select, Toast, Frame, Spinner, Badge, Button, ButtonGroup, Box, BlockStack } from "@shopify/polaris";
 import { api } from "../api";
 
-const emptyForm = { title: "", description: "", instructorName: "", category: "", duration: "", status: "Active" };
+const emptyForm = { title: "",description: "", instructorName: "", category: "", duration: "", status: "Active" };
 
 export default function Courses() {
   const [courses, setCourses] = useState([]);
@@ -16,16 +16,25 @@ export default function Courses() {
 
   const load = useCallback(() => {
     setLoading(true);
-    api.get("/api/courses").then(setCourses).catch((err) => setToast(err.message)).finally(() => setLoading(false));
+    api.get("/api/courses")
+      .then(setCourses)
+      .catch((err) => setToast(err.message))
+      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
   function openCreate() {
-    setForm(emptyForm); setErrors({}); setEditingId(null); setModalOpen(true);
+    setForm(emptyForm);
+    setErrors({});
+    setEditingId(null);
+    setModalOpen(true);
   }
   function openEdit(course) {
-    setForm({ ...course }); setErrors({}); setEditingId(course._id); setModalOpen(true);
+    setForm({ ...course });
+    setErrors({});
+    setEditingId(course._id);
+    setModalOpen(true);
   }
 
   async function handleSave() {
@@ -71,18 +80,22 @@ export default function Courses() {
       <IndexTable.Cell>{c.duration}</IndexTable.Cell>
       <IndexTable.Cell><Badge tone={c.status === "Active" ? "success" : "critical"}>{c.status}</Badge></IndexTable.Cell>
       <IndexTable.Cell>
-        <button onClick={() => openEdit(c)}>Edit</button>{" "}
-        <button onClick={() => setDeleteId(c._id)}>Delete</button>
+        <ButtonGroup>
+          <Button size="slim" onClick={() => openEdit(c)}>Edit</Button>
+          <Button size="slim" tone="critical" onClick={() => setDeleteId(c._id)}>Delete</Button>
+        </ButtonGroup>
       </IndexTable.Cell>
     </IndexTable.Row>
   ));
 
   return (
     <Frame>
-      <Page title="Courses" primaryAction={{ content: "Add course", onAction: openCreate }}>
-        <Card>
+      <Page title="Courses" subtitle="Manage your LMS curriculums" primaryAction={{ content: "Add course", onAction: openCreate }}>
+        <Card padding="0">
           {loading ? (
-            <div style={{ padding: "2rem", textAlign: "center" }}><Spinner /></div>
+            <Box padding="800">
+              <BlockStack inlineAlign="center"><Spinner /></BlockStack>
+            </Box>
           ) : courses.length === 0 ? (
             <EmptyState heading="No courses yet" action={{ content: "Add course", onAction: openCreate }} image="">
               <p>Create your first course to get started.</p>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Page, Layout, Card, Text, SkeletonBodyText, Banner } from "@shopify/polaris";
+import { Page, Layout, Card, Text, SkeletonBodyText, Banner, InlineGrid, BlockStack, Box, IndexTable, Badge } from "@shopify/polaris";
 import { api } from "../api";
 
 export default function Dashboard() {
@@ -36,26 +36,41 @@ export default function Dashboard() {
       )}
       <Layout>
         <Layout.Section>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "1rem" }}>
+          <InlineGrid columns={{ xs: 1, sm: 2, md: 3, lg: 5 }} gap="400">
             {stats.map((s) => (
               <Card key={s.label}>
-                <Text variant="headingLg" as="p">{s.value}</Text>
-                <Text tone="subdued" as="p">{s.label}</Text>
+                <BlockStack gap="200">
+                  <Text variant="headingXl" as="p">{s.value}</Text>
+                  <Text tone="subdued" as="p">{s.label}</Text>
+                </BlockStack>
               </Card>
             ))}
-          </div>
+          </InlineGrid>
         </Layout.Section>
         <Layout.Section>
-          <Card>
-            <Text variant="headingMd" as="h2">Recently Enrolled Students</Text>
+          <Card padding="0">
+            <Box padding="400" paddingBottom="200">
+              <Text variant="headingMd" as="h2">Recently Enrolled Students</Text>
+            </Box>
             {data.recentEnrollments.length === 0 ? (
-              <Text tone="subdued" as="p">No enrollments yet.</Text>
+              <Box padding="400">
+                <Text tone="subdued" as="p">No enrollments yet.</Text>
+              </Box>
             ) : (
-              <ul>
-                {data.recentEnrollments.map((e) => (
-                  <li key={e._id}>{e.student?.name} enrolled in {e.course?.title} — {e.status}</li>
+              <IndexTable
+                resourceName={{ singular: "enrollment", plural: "enrollments" }}
+                itemCount={data.recentEnrollments.length}
+                headings={[{ title: "Student" }, { title: "Course" }, { title: "Status" }]}
+                selectable={false}
+              >
+                {data.recentEnrollments.map((e, index) => (
+                  <IndexTable.Row id={e._id} key={e._id} position={index}>
+                    <IndexTable.Cell>{e.student?.name}</IndexTable.Cell>
+                    <IndexTable.Cell>{e.course?.title}</IndexTable.Cell>
+                    <IndexTable.Cell><Badge tone={e.status === "Completed" ? "success" : "attention"}>{e.status}</Badge></IndexTable.Cell>
+                  </IndexTable.Row>
                 ))}
-              </ul>
+              </IndexTable>
             )}
           </Card>
         </Layout.Section>

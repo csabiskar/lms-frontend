@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Page, Card, IndexTable, EmptyState, Modal, FormLayout, Select, Toast, Frame, Spinner, Badge, Button } from "@shopify/polaris";
+import { Page, Card, IndexTable, EmptyState, Modal, FormLayout, Select, Toast, Frame, Spinner, Badge, Button, Box, BlockStack } from "@shopify/polaris";
 import { api } from "../api";
 
 export default function Enrollments() {
@@ -59,10 +59,12 @@ export default function Enrollments() {
 
   return (
     <Frame>
-      <Page title="Enrollments" primaryAction={{ content: "Enroll student", onAction: () => { setError(""); setModalOpen(true); } }}>
-        <Card>
+      <Page title="Enrollments" subtitle="Track student progress" primaryAction={{ content: "Enroll student", onAction: () => { setError(""); setModalOpen(true); } }}>
+        <Card padding="0">
           {loading ? (
-            <div style={{ padding: "2rem", textAlign: "center" }}><Spinner /></div>
+            <Box padding="800">
+              <BlockStack inlineAlign="center"><Spinner /></BlockStack>
+            </Box>
           ) : enrollments.length === 0 ? (
             <EmptyState heading="No enrollments yet" image=""><p>Enroll a student in a course to get started.</p></EmptyState>
           ) : (

@@ -49,7 +49,7 @@ function LandingPage() {
                   <BlockStack gap="200">
                     <Text as="p"><strong>Store URL:</strong> <a href="https://lms-store-hh0kegdf.myshopify.com/admin" target="_blank" rel="noreferrer">https://lms-store-hh0kegdf.myshopify.com/admin</a></Text>
                     <Text as="p"><strong>Email:</strong> demo09430@gmail.com</Text>
-                    <Text as="p"><strong>Password:</strong> (Please see the email submission for the password)</Text>
+                    <Text as="p"><strong>Password:</strong> Demo@123456</Text>
                   </BlockStack>
                 </Box>
 

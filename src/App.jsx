@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { AppProvider, Frame, Spinner, Page, Banner, Tabs } from "@shopify/polaris";
+import { AppProvider, Frame, Spinner, Page, Banner, Tabs, Layout, Card, Text, BlockStack, Box } from "@shopify/polaris";
 import { BrowserRouter, Routes, Route, useLocation, Link as ReactRouterLink, useNavigate } from "react-router-dom";
 import en from "@shopify/polaris/locales/en.json";
 import { getToken } from "./shopify";
@@ -25,7 +25,45 @@ function LinkComponent({ children, url = '', external, ref, ...rest }) {
   );
 }
 
-function Layout() {
+function LandingPage() {
+  return (
+    <Page>
+      <Layout>
+        <Layout.Section>
+          <div style={{ textAlign: "center", margin: "4rem 0 2rem" }}>
+            <img src="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png" alt="Shopify App" style={{ width: "200px" }} />
+            <br/><br/>
+            <Text variant="heading2xl" as="h1">Shopify LMS App</Text>
+            <br/>
+            <Text variant="bodyLg" as="p" tone="subdued">This is a secure Shopify Embedded App. It cannot be viewed directly in a browser.</Text>
+          </div>
+        </Layout.Section>
+        <Layout.Section>
+          <div style={{ maxWidth: "600px", margin: "0 auto" }}>
+            <Card>
+              <BlockStack gap="400">
+                <Text variant="headingLg" as="h2">How to review this app</Text>
+                <Text as="p">To review this assignment, please log into the dedicated Demo Store:</Text>
+                
+                <Box padding="400" background="bg-surface-secondary" borderRadius="100">
+                  <BlockStack gap="200">
+                    <Text as="p"><strong>Store URL:</strong> <a href="https://lms-store-hh0kegdf.myshopify.com/admin" target="_blank" rel="noreferrer">https://lms-store-hh0kegdf.myshopify.com/admin</a></Text>
+                    <Text as="p"><strong>Email:</strong> demo09430@gmail.com</Text>
+                    <Text as="p"><strong>Password:</strong> (Please see the email submission for the password)</Text>
+                  </BlockStack>
+                </Box>
+
+                <Text as="p">Once logged in, click <strong>Apps</strong> in the left sidebar and select <strong>lms-App</strong> to view the live dashboard.</Text>
+              </BlockStack>
+            </Card>
+          </div>
+        </Layout.Section>
+      </Layout>
+    </Page>
+  );
+}
+
+function LayoutContent() {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -56,6 +94,7 @@ function Layout() {
 export default function App() {
   const [ready, setReady] = useState(false);
   const [error, setError] = useState("");
+  const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
     async function init() {
@@ -65,7 +104,7 @@ export default function App() {
         const host = params.get("host");
 
         if (!shop || !host) {
-          setError("Please open this app from within your Shopify Admin. (Missing shop or host parameters)");
+          setIsStandalone(true);
           return;
         }
 
@@ -90,7 +129,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AppProvider i18n={en} linkComponent={LinkComponent}>
-        {error ? (
+        {isStandalone ? (
+          <LandingPage />
+        ) : error ? (
           <Page><Banner tone="critical">{error}</Banner></Page>
         ) : !ready ? (
           <Page>
@@ -99,7 +140,7 @@ export default function App() {
             </div>
           </Page>
         ) : (
-          <Layout />
+          <LayoutContent />
         )}
       </AppProvider>
     </BrowserRouter>
